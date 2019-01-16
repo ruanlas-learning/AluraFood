@@ -1,5 +1,6 @@
 package com.example.ruan.alurafood.ui.activity;
 
+import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -8,7 +9,10 @@ import android.view.View;
 import android.widget.EditText;
 
 import com.example.ruan.alurafood.R;
+import com.example.ruan.alurafood.formatter.FormataTelefoneComDdd;
 import com.example.ruan.alurafood.validator.ValidaCpf;
+import com.example.ruan.alurafood.validator.ValidaEmail;
+import com.example.ruan.alurafood.validator.ValidaTelefoneComDdd;
 import com.example.ruan.alurafood.validator.ValidacaoPadrao;
 
 import br.com.caelum.stella.format.CPFFormatter;
@@ -44,13 +48,38 @@ public class FormularioCadastroActivity extends AppCompatActivity {
     private void configuraCampoEmail() {
         TextInputLayout textInputEmail =
                 findViewById(R.id.formulario_cadastro_campo_email);
-        adicionaValidacaoPadrao(textInputEmail);
+        EditText campoEmail = textInputEmail.getEditText();
+        final ValidaEmail validaEmail = new ValidaEmail(textInputEmail);
+        campoEmail.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if ( !hasFocus ){
+                    validaEmail.estaValido();
+                }
+            }
+        });
+//        adicionaValidacaoPadrao(textInputEmail);
     }
 
     private void configuraCampoTelefoneDDD() {
         TextInputLayout textInputTelefoneComDDD =
                 findViewById(R.id.formulario_cadastro_campo_telefone_com_ddd);
-        adicionaValidacaoPadrao(textInputTelefoneComDDD);
+        final EditText campoTelefoneComDdd = textInputTelefoneComDDD.getEditText();
+        final ValidaTelefoneComDdd validaTelefoneComDdd = new ValidaTelefoneComDdd(textInputTelefoneComDDD);
+        final FormataTelefoneComDdd formatador = new FormataTelefoneComDdd();
+        campoTelefoneComDdd.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                String telefoneComDdd = campoTelefoneComDdd.getText().toString();
+                if ( hasFocus ){
+                    String telefoneComDddSemFormatacao = formatador.remove(telefoneComDdd);
+                    campoTelefoneComDdd.setText(telefoneComDddSemFormatacao);
+                }else {
+                    validaTelefoneComDdd.estaValido();
+                }
+            }
+        });
+//        adicionaValidacaoPadrao(textInputTelefoneComDDD);
     }
 
     private void configuraCampoCpf() {
