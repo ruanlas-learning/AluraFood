@@ -1,12 +1,13 @@
 package com.example.ruan.alurafood.ui.activity;
 
-import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.example.ruan.alurafood.R;
 import com.example.ruan.alurafood.formatter.FormataTelefoneComDdd;
@@ -14,14 +15,17 @@ import com.example.ruan.alurafood.validator.ValidaCpf;
 import com.example.ruan.alurafood.validator.ValidaEmail;
 import com.example.ruan.alurafood.validator.ValidaTelefoneComDdd;
 import com.example.ruan.alurafood.validator.ValidacaoPadrao;
+import com.example.ruan.alurafood.validator.Validador;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import br.com.caelum.stella.format.CPFFormatter;
-import br.com.caelum.stella.validation.CPFValidator;
-import br.com.caelum.stella.validation.InvalidStateException;
 
 public class FormularioCadastroActivity extends AppCompatActivity {
 
     private static final String ERRO_FORMATACAO_CPF = "erro formatação cpf";
+    private final List<Validador> validadores = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +41,38 @@ public class FormularioCadastroActivity extends AppCompatActivity {
         configuraCampoTelefoneDDD();
         configuraCampoEmail();
         configuraCampoSenha();
+        configuraBotaoCadastrar();
+    }
+
+    private void configuraBotaoCadastrar() {
+        Button botaoCadastrar = findViewById(R.id.formulario_cadastro_botao_cadastrar);
+        botaoCadastrar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                boolean formularioEstaValido = validaTodosCampos();
+                if (formularioEstaValido){
+                    cadastroRealizado();
+                }
+            }
+        });
+    }
+
+    private void cadastroRealizado() {
+        Toast.makeText(
+                FormularioCadastroActivity.this,
+                "Cadastro realizado com sucesso!",
+                Toast.LENGTH_SHORT).show();
+    }
+
+    private boolean validaTodosCampos() {
+        boolean formularioEstaValido = true;
+        for (Validador validador : validadores
+             ) {
+            if ( !validador.estaValido() ){
+                formularioEstaValido = false;
+            }
+        }
+        return formularioEstaValido;
     }
 
     private void configuraCampoSenha() {
@@ -50,6 +86,7 @@ public class FormularioCadastroActivity extends AppCompatActivity {
                 findViewById(R.id.formulario_cadastro_campo_email);
         EditText campoEmail = textInputEmail.getEditText();
         final ValidaEmail validaEmail = new ValidaEmail(textInputEmail);
+        validadores.add(validaEmail);
         campoEmail.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -66,6 +103,7 @@ public class FormularioCadastroActivity extends AppCompatActivity {
                 findViewById(R.id.formulario_cadastro_campo_telefone_com_ddd);
         final EditText campoTelefoneComDdd = textInputTelefoneComDDD.getEditText();
         final ValidaTelefoneComDdd validaTelefoneComDdd = new ValidaTelefoneComDdd(textInputTelefoneComDDD);
+        validadores.add(validaTelefoneComDdd);
         final FormataTelefoneComDdd formatador = new FormataTelefoneComDdd();
         campoTelefoneComDdd.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
@@ -89,6 +127,7 @@ public class FormularioCadastroActivity extends AppCompatActivity {
         final EditText campoCpf = textInputCpf.getEditText();
         final CPFFormatter formatador = new CPFFormatter();
         final ValidaCpf validaCpf = new ValidaCpf(textInputCpf);
+        validadores.add(validaCpf);
         campoCpf.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {
@@ -122,6 +161,7 @@ public class FormularioCadastroActivity extends AppCompatActivity {
     private void adicionaValidacaoPadrao(final TextInputLayout textInputCampo){
         final EditText campo = textInputCampo.getEditText();
         final ValidacaoPadrao validacaoPadrao = new ValidacaoPadrao(textInputCampo);
+        validadores.add(validacaoPadrao);
         campo.setOnFocusChangeListener(new View.OnFocusChangeListener() {
             @Override
             public void onFocusChange(View v, boolean hasFocus) {

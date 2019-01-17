@@ -2,14 +2,16 @@ package com.example.ruan.alurafood.validator;
 
 import android.support.annotation.NonNull;
 import android.support.design.widget.TextInputLayout;
+import android.util.Log;
 import android.widget.EditText;
 
 import br.com.caelum.stella.format.CPFFormatter;
 import br.com.caelum.stella.validation.CPFValidator;
 import br.com.caelum.stella.validation.InvalidStateException;
 
-public class ValidaCpf {
+public class ValidaCpf implements Validador{
 
+    private static final String ERRO_FORMATACAO_CPF = "erro formatação cpf";
     private static final String CPF_INVALIDO = "CPF inválido";
     public static final String DEVE_TER_ONZE_DIGITOS = "O CPF precisa ter 11 dígitos";
     private final TextInputLayout textInputCpf;
@@ -24,13 +26,20 @@ public class ValidaCpf {
         this.formatador = new CPFFormatter();
     }
 
+    @Override
     public boolean estaValido(){
         if ( !validacaoPadrao.estaValido() ) return false;
         String cpf = getCpf();
-        if ( !validaCampoComOnzeDigitos(cpf) ) return false;
-        if ( !validaCalculoCpf(cpf) ) return false;
+        String cpfSemFormato = cpf;
+        try {
+            cpfSemFormato = formatador.unformat(cpf);
+        }catch (IllegalArgumentException e){
+            Log.e(ERRO_FORMATACAO_CPF, e.getMessage());
+        }
+        if ( !validaCampoComOnzeDigitos(cpfSemFormato) ) return false;
+        if ( !validaCalculoCpf(cpfSemFormato) ) return false;
 
-        adicionaFormatacao(cpf);
+        adicionaFormatacao(cpfSemFormato);
         return true;
     }
 
